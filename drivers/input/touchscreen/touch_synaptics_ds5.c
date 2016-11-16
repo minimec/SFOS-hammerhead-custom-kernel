@@ -38,6 +38,34 @@
 
 #include "SynaImage_ds5.h"
 
+#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+#include <linux/input/doubletap2wake.h>
+
+static bool prevent_sleep_irq_wake_enabled = false;
+static void prevent_sleep_enable_irq_wake(unsigned int irq){
+	if(!prevent_sleep_irq_wake_enabled){
+		prevent_sleep_irq_wake_enabled = true;
+		enable_irq_wake(irq);
+		pr_info("irq_wake enabled\n");
+	}
+	else
+		pr_info("irq_wake already enabled\n");
+}
+static void prevent_sleep_disable_irq_wake(unsigned int irq){
+	if(prevent_sleep_irq_wake_enabled){
+		prevent_sleep_irq_wake_enabled = false;
+		disable_irq_wake(irq);
+		pr_info("irq_wake disabled\n");
+	}
+	else
+		pr_info("irq_wake already disabled\n");
+}
+#endif
+
+#ifdef CONFIG_PWRKEY_SUSPEND
+#include <linux/qpnp/power-on.h>
+#endif
+
 static struct workqueue_struct *synaptics_wq;
 
 /* RMI4 spec from 511-000405-01 Rev.D
@@ -1654,6 +1682,15 @@ static int lcd_notifier_callback(struct notifier_block *this,
 {
 	struct synaptics_ts_data *ts =
 		container_of(this, struct synaptics_ts_data, notif);
+		
+	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+	bool prevent_sleep = (dt2w_switch > 0);
+	#endif
+
+	#ifdef CONFIG_PWRKEY_SUSPEND
+	if (pwrkey_pressed)
+		prevent_sleep = false;
+	#endif
 
 	TOUCH_DEBUG_TRACE("%s: event = %lu\n", __func__, event);
 
@@ -1661,6 +1698,11 @@ static int lcd_notifier_callback(struct notifier_block *this,
 	case LCD_EVENT_ON_START:
 		mutex_lock(&ts->input_dev->mutex);
 		synaptics_ts_start(ts);
+		#ifdef CONFIG_PWRKEY_SUSPEND
+		if (pwrkey_pressed) {
+			pwrkey_pressed = false;
+		}
+		#endif
 		break;
 	case LCD_EVENT_ON_END:
 		if (!ts->curr_resume_state) {
@@ -1670,15 +1712,33 @@ static int lcd_notifier_callback(struct notifier_block *this,
 				msecs_to_jiffies(70));
 		}
 		mutex_unlock(&ts->input_dev->mutex);
+		#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+		if (prevent_sleep)
+			prevent_sleep_disable_irq_wake(ts->client->irq);
+		#endif
 		break;
 	case LCD_EVENT_OFF_START:
+		#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+		if (!prevent_sleep)
+		#endif
+		{
 		mutex_lock(&ts->input_dev->mutex);
 		if (!cancel_delayed_work_sync(&ts->work_init))
 			disable_irq(ts->client->irq);
+		}
 		break;
 	case LCD_EVENT_OFF_END:
+		#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+		if (!prevent_sleep)
+		#endif
+		{
 		synaptics_ts_stop(ts);
 		mutex_unlock(&ts->input_dev->mutex);
+		}
+		#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+		if (prevent_sleep)
+			prevent_sleep_enable_irq_wake(ts->client->irq);
+		#endif
 		break;
 	default:
 		break;
