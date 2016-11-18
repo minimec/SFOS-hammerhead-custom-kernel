@@ -3126,5 +3126,17 @@ config ALUCARD_HOTPLUG
 	default n
 	help
 	  Generic Alucard-hotplug cpu hotplug driver for ARM SOCs
+	  
+config CPU_OVERCLOCK
+ 	bool "Enable CPU Overclocking option"
+ 	default n
+ 	help
+ 	  Krait overclocking up to 2.9 GHz
+
+config CPU_UNDERCLOCK
+ 	bool "Enable CPU Underclocking option"
+ 	default n
+ 	help
+ 	  Krait underclocking down to 92 MHz
 
 endif
