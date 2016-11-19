@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -22,30 +22,41 @@
 
 		qcom,chipid = <0x03030000>;
 
-		qcom,initial-pwrlevel = <2>;
-		qcom,step-pwrlevel = <2>;
-
+		qcom,bus-control;
+		qcom,initial-pwrlevel = <5>;
 		qcom,idle-timeout = <80>; //msec
 		qcom,strtstp-sleepwake;
 		qcom,clk-map = <0x0000006>; //KGSL_CLK_CORE | KGSL_CLK_IFACE
 
+		qcom,pm-qos-active-latency = <501>;
+		qcom,pm-qos-wakeup-latency = <490>;
+
 		/* Bus Scale Settings */
 		qcom,msm-bus,name = "grp3d";
-		qcom,msm-bus,num-cases = <6>;
+		qcom,msm-bus,num-cases = <17>;
 		qcom,msm-bus,num-paths = <2>;
 		qcom,msm-bus,vectors-KBps =
 				<26 512 0 0>, <89 604 0 0>,
-				<26 512 0 2200000>, <89 604 0 3000000>,
-				<26 512 0 4000000>, <89 604 0 3000000>,
-				<26 512 0 4000000>, <89 604 0 4500000>,
-				<26 512 0 6400000>, <89 604 0 4500000>,
-				<26 512 0 6400000>, <89 604 0 7600000>;
+				<26 512 1200000 2456000>, <89 604 0 3200000>,
+				<26 512 0 3680000>, <89 604 0 3200000>,
+				<26 512 1200000 2456000>, <89 604 0 5280000>,
+				<26 512 0 3680000>, <89 604 0 5280000>,
+				<26 512 0 4912000>, <89 604 0 5280000>,
+				<26 512 0 3680000>, <89 604 0 6224000>,
+				<26 512 0 4912000>, <89 604 0 6224000>,
+				<26 512 0 7464000>, <89 604 0 6224000>,
+				<26 512 0 3680000>, <89 604 0 7398000>,
+				<26 512 0 4912000>, <89 604 0 7398000>,
+				<26 512 0 7464000>, <89 604 0 7398000>,
+				<26 512 0 4912000>, <89 604 0 9248000>,
+				<26 512 0 7464000>, <89 604 0 9248000>,
+				<26 512 0 8528000>, <89 604 0 9248000>,
+				<26 512 0 6400000>, <89 604 0 10192000>,
+				<26 512 0 8528000>, <89 604 0 10192000>;
 
 		/* GDSC oxili regulators */
 		vddcx-supply = <&gdsc_oxili_cx>;
 		vdd-supply = <&gdsc_oxili_gx>;
-
-		/* Power levels */
 
 		/* IOMMU Data */
 		iommu = <&kgsl_iommu>;
@@ -58,6 +69,7 @@
 		coresight-child-list = <&funnel_mmss>;
 		coresight-child-ports = <7>;
 
+		/* Power levels */
 		qcom,gpu-pwrlevels {
 			#address-cells = <1>;
 			#size-cells = <0>;
@@ -66,44 +78,50 @@
 
 			qcom,gpu-pwrlevel@0 {
 				reg = <0>;
-				qcom,gpu-freq = <450000000>;
-				qcom,bus-freq = <5>;
-				qcom,io-fraction = <33>;
+				qcom,gpu-freq = <650000000>;
+				qcom,bus-freq = <16>;
 			};
 
 			qcom,gpu-pwrlevel@1 {
 				reg = <1>;
-				qcom,gpu-freq = <320000000>;
-				qcom,bus-freq = <4>;
-				qcom,io-fraction = <66>;
+				qcom,gpu-freq = <533333000>;
+				qcom,bus-freq = <13>;
 			};
 
 			qcom,gpu-pwrlevel@2 {
 				reg = <2>;
-				qcom,gpu-freq = <320000000>;
-				qcom,bus-freq = <3>;
-				qcom,io-fraction = <66>;
+				qcom,gpu-freq = <450000000>;
+				qcom,bus-freq = <10>;
 			};
 
 			qcom,gpu-pwrlevel@3 {
 				reg = <3>;
-				qcom,gpu-freq = <200000000>;
-				qcom,bus-freq = <2>;
-				qcom,io-fraction = <100>;
+				qcom,gpu-freq = <389000000>;
+				qcom,bus-freq = <7>;
 			};
 
 			qcom,gpu-pwrlevel@4 {
 				reg = <4>;
-				qcom,gpu-freq = <200000000>;
-				qcom,bus-freq = <1>;
-				qcom,io-fraction = <100>;
+				qcom,gpu-freq = <320000000>;
+				qcom,bus-freq = <4>;
 			};
 
 			qcom,gpu-pwrlevel@5 {
 				reg = <5>;
+				qcom,gpu-freq = <200000000>;
+				qcom,bus-freq = <2>;
+			};
+
+			qcom,gpu-pwrlevel@6 {
+				reg = <6>;
+				qcom,gpu-freq = <100000000>;
+				qcom,bus-freq = <1>;
+			};
+
+			qcom,gpu-pwrlevel@7 {
+				reg = <7>;
 				qcom,gpu-freq = <27000000>;
 				qcom,bus-freq = <0>;
-				qcom,io-fraction = <0>;
 			};
 		};
 
