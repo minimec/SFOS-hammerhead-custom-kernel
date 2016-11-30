@@ -30,9 +30,6 @@
 #include <linux/of_device.h>
 #include <linux/of_gpio.h>
 #include <linux/qpnp/qpnp-adc.h>
-#ifdef CONFIG_FORCE_FAST_CHARGE
-#include <linux/fastchg.h>
-#endif
 
 /* Register definitions */
 #define INPUT_SRC_CONT_REG              0X00
@@ -166,13 +163,8 @@ struct current_limit_entry {
 };
 
 static struct current_limit_entry adap_tbl[] = {
-#ifdef CONFIG_FORCE_FAST_CHARGE
-	{1500, 1280},
-	{2000, 1696},
-#else	
-    {1200, 1024},
+	{1200, 1024},
 	{2000, 1536},
-#endif
 };
 
 static int bq24192_step_down_detect_disable(struct bq24192_chip *chip);
@@ -324,9 +316,6 @@ static int bq24192_set_input_i_limit(struct bq24192_chip *chip, int ma)
 {
 	int i;
 	u8 temp;
-#ifdef CONFIG_FORCE_FAST_CHARGE
-	int custom_ma = ma;
-#endif
 
 	if (ma < INPUT_CURRENT_LIMIT_MIN_MA
 			|| ma > INPUT_CURRENT_LIMIT_MAX_MA) {
@@ -343,50 +332,9 @@ static int bq24192_set_input_i_limit(struct bq24192_chip *chip, int ma)
 		pr_err("can't find %d in icl_ma_table. Use min.\n", ma);
 		i = 0;
 	}
-#ifdef CONFIG_FORCE_FAST_CHARGE
- 	switch (fast_charge_level) {
- 		case FAST_CHARGE_0:
- 			break;
- 		case FAST_CHARGE_500:
- 			i = 2;
- 			custom_ma = FAST_CHARGE_500;
- 			break;
- 		case FAST_CHARGE_900:
- 			i = 3;
- 			custom_ma = FAST_CHARGE_900;
- 			break;
- 		case FAST_CHARGE_1200:
- 			i = 4;
- 			custom_ma = FAST_CHARGE_1200;
- 			break;
- 		case FAST_CHARGE_1500:
- 			i = 5;
- 			custom_ma = FAST_CHARGE_1500;
- 			break;
- 		case FAST_CHARGE_2000:
- 			i = 6;
- 			custom_ma = FAST_CHARGE_2000;
- 			break;
- 		default:
- 			break;
- 	}
-#endif
- 
+
 	temp = icl_ma_table[i].value;
-	
-#ifdef CONFIG_FORCE_FAST_CHARGE
-	if (custom_ma > chip->max_input_i_ma) {
-		chip->saved_input_i_ma = custom_ma;
-		pr_info("reject %d mA due to therm mitigation\n", custom_ma);
-		return 0;
-	}
 
-	if (!chip->therm_mitigation)
-		chip->saved_input_i_ma = custom_ma;
-
-	chip->therm_mitigation = false;
-	pr_info("input current limit = %d setting 0x%02x\n", custom_ma, temp);
-#else
 	if (ma > chip->max_input_i_ma) {
 		chip->saved_input_i_ma = ma;
 		pr_info("reject %d mA due to therm mitigation\n", ma);
@@ -400,7 +348,6 @@ static int bq24192_set_input_i_limit(struct bq24192_chip *chip, int ma)
 	pr_info("input current limit = %d setting 0x%02x\n", ma, temp);
 	return bq24192_masked_write(chip->client, INPUT_SRC_CONT_REG,
 			INPUT_CURRENT_LIMIT_MASK, temp);
-#endif
 }
 
 static int mitigate_tbl[] = {3000, 900, 500, 100};

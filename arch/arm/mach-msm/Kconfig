@@ -3063,11 +3063,11 @@ config WALL_CLK_SYSFS
 	 wall clock simulation and read the current SFN.
 	 
 config FORCE_FAST_CHARGE
-	bool "Increase input current limit up to 2000mA when charging via USB"
+	bool "Increase input current limit to 900mA when charging via USB"
 	default y
 	help
-	  A simple sysfs interface to increase input current limit up to 
-	  2000mA when charging via USB.
+	  A simple sysfs interface to increase input current limit to 
+	  900mA when charging via USB.
 
 config BLU_PLUG
 	bool "Dynamic hotplug driver"
