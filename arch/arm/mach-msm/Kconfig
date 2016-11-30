@@ -3127,6 +3127,14 @@ config ALUCARD_HOTPLUG
 	help
 	  Generic Alucard-hotplug cpu hotplug driver for ARM SOCs
 	  
+config MSM_MPDEC
+ 	bool "Enable kernel based mpdecision"
+ 	depends on MSM_SMP
+ 	default n
+ 	help
+ 	  This enables kernel based multi core control.
+ 	  (up/down hotplug based on load)
+	  
 config CPU_OVERCLOCK
  	bool "Enable CPU Overclocking option"
  	default n
