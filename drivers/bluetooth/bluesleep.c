@@ -627,6 +627,37 @@ static void bluesleep_stop(void)
 		bsi->uport != NULL, has_lpm_enabled);
 	wake_lock_timeout(&bsi->wake_lock, HZ / 2);
 }
+
+/**
+ * Handles HCI device events.
+ * @param this Not used.
+ * @param event The event that occurred.
+ * @param data The HCI device associated with the event.
+ * @return <code>NOTIFY_DONE</code>.
+ */
+void bluesleep_hci_event(unsigned long event)
+{
+	switch (event) {
+	case HCI_DEV_REG:
+		has_lpm_enabled = true;
+		bsi->uport = msm_hs_get_uart_port(BT_PORT_ID);
+		/* if bluetooth started, start bluesleep*/
+		bluesleep_start();
+		break;
+	case HCI_DEV_UNREG:
+		bluesleep_stop();
+		/* flush pending works */
+		flush_delayed_work(&uart_awake_wq);
+		has_lpm_enabled = false;
+		bsi->uport = NULL;
+		/* if bluetooth stopped, stop bluesleep also */
+		break;
+	case HCI_DEV_WRITE:
+		bluesleep_outgoing_data();
+		break;
+	}
+}
+
 /**
  * Read the <code>BT_WAKE</code> GPIO pin value via the proc interface.
  * When this function returns, <code>page</code> will contain a 1 if the
