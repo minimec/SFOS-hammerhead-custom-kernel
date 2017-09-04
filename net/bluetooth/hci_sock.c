@@ -84,6 +84,8 @@ static struct bt_sock_list hci_sk_list = {
 	.lock = __RW_LOCK_UNLOCKED(hci_sk_list.lock)
 };
 
+void bluesleep_hci_event(unsigned long event);
+
 /* Send frame to RAW socket */
 void hci_send_to_sock(struct hci_dev *hdev, struct sk_buff *skb,
 							struct sock *skip_sk)
@@ -810,6 +812,8 @@ static int hci_sock_dev_event(struct notifier_block *this, unsigned long event, 
 {
 	struct hci_dev *hdev = (struct hci_dev *) ptr;
 	struct hci_ev_si_device ev;
+	
+	bluesleep_hci_event(event);
 
 	BT_DBG("hdev %s event %ld", hdev->name, event);
 
