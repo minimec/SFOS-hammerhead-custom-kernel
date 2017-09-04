@@ -207,6 +207,8 @@ static int hci_uart_close(struct hci_dev *hdev)
 	return 0;
 }
 
+void bluesleep_hci_event(unsigned long event);
+
 /* Send frames from HCI layer */
 static int hci_uart_send_frame(struct sk_buff *skb)
 {
@@ -224,6 +226,8 @@ static int hci_uart_send_frame(struct sk_buff *skb)
 	hu = (struct hci_uart *) hdev->driver_data;
 
 	BT_DBG("%s: type %d len %d", hdev->name, bt_cb(skb)->pkt_type, skb->len);
+	
+	bluesleep_hci_event(HCI_DEV_WRITE);
 
 	hu->proto->enqueue(hu, skb);
 
