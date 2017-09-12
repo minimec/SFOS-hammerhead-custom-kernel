@@ -449,11 +449,9 @@ static int bluesleep_hci_event(struct notifier_block *this,
 
 	switch (event) {
 	case HCI_DEV_REG:
-		if (!bluesleep_hdev) {
-			bluesleep_hdev = hdev;
-			hu  = (struct hci_uart *) hdev->driver_data;
-			state = (struct uart_state *) hu->tty->driver_data;
-			bsi->uport = state->uart_port;
+		if (!has_lpm_enabled) {
+			has_lpm_enabled = true;
+			bsi->uport = msm_hs_get_uart_port(BT_PORT_ID);
 			/* if bluetooth started, start bluesleep*/
 			bluesleep_start();
 		}
